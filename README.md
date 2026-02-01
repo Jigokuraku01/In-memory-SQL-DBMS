@@ -1,4 +1,8 @@
-﻿Задание 1: [STAGE-1](STAGE-1.md)
+﻿**Language:** **Русский** | [English](README_en.md)
+
+---
+
+Задание 1: [STAGE-1](STAGE-1.md)
 
 Задание 2: [STAGE-2](STAGE-2.md)
 
