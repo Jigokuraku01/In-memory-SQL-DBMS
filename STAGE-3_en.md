@@ -5,10 +5,11 @@
 # Working with Data in Tables
 
 In the third stage we'll implement:
-1) Adding data to a table
-2) Reading data from a table
-3) Updating data in a table
-4) Deleting data from a table
+
+1. Adding data to a table
+2. Reading data from a table
+3. Updating data in a table
+4. Deleting data from a table
 
 All resulting tables formed as a result of executing a command must be
 returned from the endpoint, in the same way as it's done in commands from the previous
@@ -25,6 +26,7 @@ VALUES
     (100, false, ..., 'str_value100')
 RETURNING column1_name, column5_name;
 ```
+
 The INSERT INTO command adds data to table "table_name", after the table name,
 in parentheses, the names of columns are specified for which we'll specify values later.
 If when creating the table default values were specified for some columns
@@ -76,25 +78,30 @@ WHERE column1_name > 10
 ORDER BY column2_name ASC
 LIMIT 10
 ```
+
 I'll add a few more examples of correct queries:
+
 ```sql
 SELECT * FROM table_name;
 SELECT column_name FROM table_name WHERE id < 10;
 SELECT column_name FROM table_name LIMIT 10;
 SELECT column_name FROM table_name ORDER BY column_name DESC;
 ```
+
 So to get some data from a table, the SELECT FROM command is used.
 After the SELECT keyword comes a list of column names we want to get from the table.
-If instead of a list the * symbol is specified, then all columns are selected. After the list necessarily comes
+If instead of a list the \* symbol is specified, then all columns are selected. After the list necessarily comes
 the FROM keyword, after it the table name. This is where the required part of the query ends.
 All other keywords are optional and may be absent.
 
 The WHERE keyword sets a condition on the column value. Only those rows are returned
 from the table that satisfy the condition. In real life, a condition can contain complex
 expressions, for example:
+
 ```sql
 WHERE column1_name > 10 AND (column2_name = 'abc' OR column3_name = true)
 ```
+
 We'll make an assumption and will support only a condition on one column and will
 support only the following set of operators =, !=, >, <, >= and <=.
 When comparing strings, we use Ordinal comparison. A column with SERIAL type in the comparison expression

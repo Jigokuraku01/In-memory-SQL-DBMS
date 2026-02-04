@@ -5,9 +5,10 @@
 # Creating and Deleting Tables
 
 In the second stage we'll implement:
-1) Logic for creating and deleting tables
-2) Start writing an SQL query parser
-3) Add endpoints (handles) to the project for executing SQL queries and several additional ones for getting the list of tables and table schema
+
+1. Logic for creating and deleting tables
+2. Start writing an SQL query parser
+3. Add endpoints (handles) to the project for executing SQL queries and several additional ones for getting the list of tables and table schema
 
 ## SQL Queries We'll Learn to Parse and Execute in This Part
 
@@ -25,17 +26,20 @@ CREATE TABLE [IF NOT EXISTS] table_name (
 -- Deleting a table
 DROP TABLE [IF EXISTS] table_name;
 ```
+
 Let me decode what's written:
-1) ';' at the end of the query is usually only placed in scripts that may have many sequential SQL commands, however, since we're making an endpoint that will execute only one command at a time, ';' at the end should simply be ignored by your parser
-2) SQL keywords are written in uppercase, names/values in lowercase, however SQL keywords are case-insensitive, so if you rewrite everything in lowercase, everything should parse correctly, while keeping in mind that data, for example value for the DEFAULT keyword, is case-sensitive - consider this when implementing the parser
-3) keywords enclosed in [] are optional parts of the SQL expression, but as always there are lots of special cases
-4) IF NOT EXISTS - for CREATE TABLE, if present, the endpoint should always return OK(200) response and the result of whether the table was created or not, if absent, then in case of an attempt to create a table with a name that already exists, you need to return Conflict(409) from the endpoint
-5) PRIMARY KEY - a sign that this field is a key, this means it must have a unique value for each record in the table, cannot be NULL, i.e. NOT NULL - is automatically applied to this column and doesn't need to be written
-6) NOT NULL - a sign that values in this column cannot be NULL, i.e. when adding data (we'll implement this command in the future) you always need to specify a specific value that is not NULL
-7) DEFAULT - this is a keyword that sets the default value for this field, used when adding new records (rows) to the table, if it's not specified when adding, then this default value should be written to the table
-8) IF EXISTS - for DROP TABLE, if present, the endpoint should always return OK(200) and result true/false depending on table existence, if not specified, then the endpoint should return NotFound(404) error
+
+1. ';' at the end of the query is usually only placed in scripts that may have many sequential SQL commands, however, since we're making an endpoint that will execute only one command at a time, ';' at the end should simply be ignored by your parser
+2. SQL keywords are written in uppercase, names/values in lowercase, however SQL keywords are case-insensitive, so if you rewrite everything in lowercase, everything should parse correctly, while keeping in mind that data, for example value for the DEFAULT keyword, is case-sensitive - consider this when implementing the parser
+3. keywords enclosed in [] are optional parts of the SQL expression, but as always there are lots of special cases
+4. IF NOT EXISTS - for CREATE TABLE, if present, the endpoint should always return OK(200) response and the result of whether the table was created or not, if absent, then in case of an attempt to create a table with a name that already exists, you need to return Conflict(409) from the endpoint
+5. PRIMARY KEY - a sign that this field is a key, this means it must have a unique value for each record in the table, cannot be NULL, i.e. NOT NULL - is automatically applied to this column and doesn't need to be written
+6. NOT NULL - a sign that values in this column cannot be NULL, i.e. when adding data (we'll implement this command in the future) you always need to specify a specific value that is not NULL
+7. DEFAULT - this is a keyword that sets the default value for this field, used when adding new records (rows) to the table, if it's not specified when adding, then this default value should be written to the table
+8. IF EXISTS - for DROP TABLE, if present, the endpoint should always return OK(200) and result true/false depending on table existence, if not specified, then the endpoint should return NotFound(404) error
 
 A couple words about which types we'll support in our database, below is a table with explanation:
+
 ```
 SQL type    C# type     Comment
 -----------------------------------
@@ -52,7 +56,9 @@ SERIAL      Int64       Counter used as
                         to use this type only together with PRIMARY KEY. For storing the value,
                         I think we can proceed like other databases.
 ```
+
 Now I'll give several examples of correct table creation queries:
+
 ```sql
 CREATE TABLE tab1 (id SERIAL PRIMARY KEY);
 create table tab2 (name string not null, description string);
@@ -61,8 +67,10 @@ CREATE TABLE tab3 (
     column BOOLEAN DEFAULT TRUE
 );
 ```
+
 As you can see, an SQL query can also be split into lines, or can be written in one line, roughly speaking, line breaks can be interpreted as spaces.
 And now several examples of incorrect queries (the parser should correctly handle all such cases, those listed here and not only):
+
 ```sql
 -- According to our agreement, id - must be marked as PRIMARY KEY
 CREATE TABLE table (id SERIAL);
@@ -87,6 +95,7 @@ CREATE TABLE table (name INTEGER NOT NULL DEFAULT 'Hello world!');
 ## New Endpoints (Handles)
 
 ### GET /api/v1/tables/list
+
 ```
 GET /api/v1/tables/list
 
@@ -97,9 +106,11 @@ output:
   tables: ["table1", "table2", ..., "tableN"]
 }
 ```
+
 This endpoint should return a list of table names that are currently created in
 our database. To get such JSON as output, you can use as result
 a class like:
+
 ```csharp
 public class GetTablesOutput
 {
@@ -108,6 +119,7 @@ public class GetTablesOutput
 ```
 
 ### POST /api/v1/tables/schema
+
 ```
 POST /api/v1/tables/schema
 
@@ -147,7 +159,9 @@ output:
   }
 }
 ```
+
 In terms of classes on the service side, this representation will work:
+
 ```csharp
 public class DefaultValueInfo
 {
@@ -175,9 +189,11 @@ public class PostTablesSchemaOutput
     [Required] public TableSchemaInfo Schema { get; set; }
 }
 ```
+
 The endpoint should return the table schema by table name, which represents a set of
 information about the table and columns. Let's look at an example query that creates a table
 and the result of getting the schema:
+
 ```sql
 CREATE TABLE goods (
     "id" SERIAL PRIMARY KEY,
@@ -188,6 +204,7 @@ CREATE TABLE goods (
     "is_foreign" BOOLEAN NOT NULL
 )
 ```
+
 Note that in SQL, something enclosed in double quotes is a name (for example, of a column or table). If you
 need to set a value for a string, you should use single quotes. Double quotes are usually used for
 resolving name conflicts with keywords. For example, the word "user" might be reserved by the DBMS for a variable storing the current username from
@@ -195,6 +212,7 @@ which the query is executed. However, if enclosed in double quotes "user" - the 
 it as a column or table name, or some other object, but not as a language keyword. And overall, double quotes can be omitted.
 However, supporting this syntax feature when parsing queries is necessary.
 For a table created this way, we should get this result when querying its schema:
+
 ```json
 {
   "schema": {
@@ -315,6 +333,7 @@ output:
   ]
 }
 ```
+
 Here's the general view of the response to arbitrary SQL queries. In fact, in the response you need
 to provide the schema of the table we got when executing the query and rows with data.
 The schema is formed by the same structures as in the previous endpoint. And the "result" array
@@ -331,6 +350,7 @@ false - otherwise.
 
 This is how the response for these queries should look. Immediately write generalized code for returning
 values for an arbitrary table.
+
 ```json
 {
   "schema": {
@@ -348,14 +368,14 @@ values for an arbitrary table.
       }
     ]
   },
-  "result": [
-    ["true"]
-  ]
+  "result": [["true"]]
 }
 ```
+
 ## Assignment
 
 So let's draw a line on what needs to be done:
-1) Develop Table and TableSchema classes that will store table data and table data schema respectively.
-2) Implement an SQL command parser for CREATE TABLE and DROP TABLE, which converts queries into executable commands. A possible variant of organizing the command interface and example we discussed in practice.
-3) Implement 3 new endpoints with logic as described in the assignment.
+
+1. Develop Table and TableSchema classes that will store table data and table data schema respectively.
+2. Implement an SQL command parser for CREATE TABLE and DROP TABLE, which converts queries into executable commands. A possible variant of organizing the command interface and example we discussed in practice.
+3. Implement 3 new endpoints with logic as described in the assignment.

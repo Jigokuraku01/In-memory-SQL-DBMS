@@ -46,11 +46,13 @@ After project generation, we get this generated project file:
 
 </Project>
 ```
+
 I've tuned it a bit, based on our conventions from the first semester,
 and requirements for working with ASP.NET Core.
 You can change these settings as you see fit, however, if you use nullable, write code in the corresponding style. Version 10 of the language
 is the minimum requirement here. Also renamed the project's root namespace,
 to better match the naming style, resulted in:
+
 ```
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
@@ -68,15 +70,17 @@ to better match the naming style, resulted in:
 
 </Project>
 ```
+
 Then the code was refined to match the new settings and demonstrate
 working with controllers.
 
-* [__Self-study__] Create your own project in a separate directory and familiarize yourself
-with how it looked at the very beginning.
+- [__Self-study__] Create your own project in a separate directory and familiarize yourself
+  with how it looked at the very beginning.
 
 Our minimalist project is ready. Can be launched.
 
 # Launching the Service
+
 ## Launching in Development Environment
 
 When launching the application from Rider or Visual Studio, it should automatically start
@@ -134,7 +138,7 @@ A good practice would be to prohibit the use of swagger interface in production.
 # Assignment 1
 
 1. Read about ASP.Net Core articles from MSDN.
-> https://learn.microsoft.com/ru-ru/aspnet/core/getting-started
+   > https://learn.microsoft.com/ru-ru/aspnet/core/getting-started
 2. Study the ExampleController on how to implement
    standard service termination via IHostApplicationLifetime.
 3. Add a class that will represent the global service context.
@@ -142,15 +146,18 @@ A good practice would be to prohibit the use of swagger interface in production.
    When creating the context, a random token should be generated, upon receiving which
    the service should terminate. It's convenient to generate random tokens using the
    random Guid generation method.
+
 ```c#
 Guid.NewGuid().ToString("N") // can use other formatting types
 ```
+
 4. Add a TerminateController with a POST endpoint to the service.
    This endpoint should accept as input an object with a single parameter token and
    String type. If the passed token equals the one you generated at
    application startup, you need to stop the service using the method from (2) and return
    Ok (200) from the endpoint. If the token differs, you need to return an error
    Forbidden (403).
+
 ```
 POST /api/v1/terminate
 input
@@ -158,6 +165,7 @@ input
   "token": "TERMINATION_TOKEN"
 }
 ```
+
 5. Add to the info endpoint (InfoController) a TerminationToken field
    that will externally provide the token that needs to be passed to the endpoint from (4) for
    application termination. Obviously, this shouldn't be done in production, and such a token

@@ -8,9 +8,9 @@ This part of the work will be dedicated to adding support for nested queries and
 table joins. To implement the plan, you'll need to complete
 three steps:
 
-1) Support the AS operator for renaming a field in the output table
-2) Support nested SELECT query
-3) Support [INNER] JOIN, LEFT JOIN and RIGHT JOIN commands
+1. Support the AS operator for renaming a field in the output table
+2. Support nested SELECT query
+3. Support [INNER] JOIN, LEFT JOIN and RIGHT JOIN commands
 
 ## AS Operator
 
@@ -20,8 +20,9 @@ SELECT
     field2,
     field3 AS description
 FROM
-    table1    
+    table1
 ```
+
 The AS operator can be specified after the column name that's selected from the table.
 If specified, in the resulting table the corresponding column should be returned
 with the new name.
@@ -41,6 +42,7 @@ SELECT name FROM (SELECT id, name FROM tab1) WHERE id < 5;
 -- 3
 SELECT name FROM SELECT id, name FROM tab1 WHERE id < 5;
 ```
+
 All 3 queries are correct, while the first is equivalent to the third query. In other words,
 in the place where we can have a nested query, we can either put parentheses or not.
 If there are parentheses, then only what's written in parentheses relates to the nested query.
@@ -82,9 +84,11 @@ table: tab_last_names
 | 30 | 3       | 'ln3'     |
 ----------------------------
 ```
+
 Let's look at the result of executing the following queries, I specifically put the nested query
 for joining tables in (), although here they can be omitted, to show the boundaries of the
 JOIN command itself:
+
 ```sql
 -- INNER JOIN (the INNER keyword can be omitted)
 SELECT
@@ -116,6 +120,7 @@ FROM
     ON tab_names.id = tab_last_names.name_id
 )
 ```
+
 All JOINs are binary operators. They take two tables as input and return
 a joined table, according to the specified equivalence class, using
 the ON operator. In our dialect, we'll support only comparison by one
@@ -125,6 +130,7 @@ is performed with the first encountered (any) row. In tests, I guarantee uniquen
 of values in columns by which joining will be performed. Also in tests there will be
 only 1 to 1 relationships. So below are two sets of tables, the first set -
 the join result. The second set - the result of the entire query.
+
 ```
 Result of [INNER] JOIN
 ---------------------------------------------------------------------------------------------------------
@@ -152,6 +158,7 @@ Result of RIGHT JOIN
 | NULL         | NULL           | 30                | 3                      | 'ln3'                    |
 ---------------------------------------------------------------------------------------------------------
 ```
+
 ```
 Query result using [INNER] JOIN
 --------------------------
@@ -179,10 +186,12 @@ Query result using RIGHT JOIN
 | NULL       | 'ln3'     |
 --------------------------
 ```
+
 Also worth noting two important points. First, the result schema after joining
 will no longer correspond to the original tables.
-1) When executing any JOINs, all fields having PRIMARY KEY must lose this attribute.
-2) When executing LEFT and RIGHT JOINs, all fields must become nullable.
+
+1. When executing any JOINs, all fields having PRIMARY KEY must lose this attribute.
+2. When executing LEFT and RIGHT JOINs, all fields must become nullable.
 
 To simplify the implementation logic, columns of the temporary table formed after merging
 two tables should be named in the form 'table_name.column_name'. And the dot in the name should be interpreted
